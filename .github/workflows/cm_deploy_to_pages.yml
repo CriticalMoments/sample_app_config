@@ -40,7 +40,10 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
       - name: Sign Config File
-        run: "mkdir -p public && curl -X POST --data-binary @${JSON_CONFIG} --header \"Content-Type: application/json\" https://criticalmoments.io/account/api/sign_config > ./public/${SIGNED_NAME}" 
+        run: |
+          mkdir -p public && \
+          status_code=$(curl -X POST --data-binary @${JSON_CONFIG} -w "%{response_code}" --header "Content-Type: application/json" https://criticalmoments.io/account/api/sign_config -o ./public/${SIGNED_NAME}) && \
+          if [ $status_code != "200" ]; then; echo "Error signing config: $status_code"; cat ./public/${SIGNED_NAME}; exit 1; fi
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
